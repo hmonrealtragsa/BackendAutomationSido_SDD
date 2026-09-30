@@ -1,0 +1,56 @@
+{
+  "feature": "Partes de Vehículos de SIDO2",
+  "description": "En este Spec vendrán los casos de prueba relacionados con los partes de vehículos de SIDO2",
+  "scenarios": [
+    {
+      "idRunner": "CP_01_Vehiculos",
+      "name": "Cuando el usuario intenta un parte de vehículos con fecha futura aparece un error controlado",
+      "when": "Llamamos al microservicio partesdiariossituacion con un metodo POST con fecha a futuro",
+      "then": "Se comprueba que devuelve un 400 y que el mensaje de error es el esperado",
+      "request": {
+        "endpoint": "SIDO2_VEHICULOS_MISPARTESDIARIOS",
+        "method": "POST",
+        "body": "bodies/vehiculos/cp_01.parteVehiculoFechaFutura.json",
+        "queryParams": {
+          "devolverResults": true,
+          "devolverDimensions": true,
+          "offset": 0,
+          "pagesize": 500
+        }
+      },
+      "expect": {
+        "status": 400,
+        "contentType": "application/json",
+        "responseTimeMs": 8000,
+        "bodyEmpty": false,
+        "response": "responses/vehiculos/cp_01.error_parteVehiculoFechaFutura.json",
+        "matchMode": "partial"
+      }
+    },
+    {
+      "idRunner": "CP_02_Vehiculos",
+      "name": "El usuario intenta realizar un parte con una fecha ya utilizada",
+      "when": "Llamamos al microservicio partesdiariossituacion con un metodo POST con una fecha ya utilizada por ese vehículo",
+      "then": "Se comprueba que devuelve un 400 y que el mensaje de error es el esperado",
+      "request": {
+        "endpoint": "SIDO2_VEHICULOS_MISPARTESDIARIOS",
+        "method": "POST",
+        "body": "bodies/vehiculos/cp_02.parteVehiculoUsado.json",
+        "queryParams": {
+          "devolverResults": true,
+          "devolverDimensions": true,
+          "offset": 0,
+          "pagesize": 500
+        }
+      },
+      "expect": {
+        "status": 400,
+        "contentType": "application/json",
+        "responseTimeMs": 8000,
+        "bodyEmpty": false,
+        "response": "responses/vehiculos/cp_02.error_parteVehiculoUsado.json",
+        "matchMode": "partial"
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+    "tipo": "InvalidPropertyValueException",
+    "mensaje": "La fecha no puede ser futura para registrar un parte diario",
+    "severidad": "ERROR",
+    "motivo": null,
+    "stackTrace": null
+}

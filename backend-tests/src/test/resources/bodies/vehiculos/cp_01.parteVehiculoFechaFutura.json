@@ -1,0 +1,23 @@
+{
+	"id": null,
+	"estado": null,
+	"esBorrador": false,
+	"fecha": "30/9/2030",
+	"vehiculoId": "5eb5f53c-7ac3-4f20-9990-a8eb41c9e7aa",
+	"matriculaVehiculoNoIdentificado": null,
+	"actuacionId": "7d7b66f0-047b-4cd1-a2f2-27585a2fecc3",
+	"actividadId": "4658da56-93cd-4417-97d6-7568e9c1bc22",
+	"conductorIdPeopleSoft": "00000245713",
+	"destinatarioIdPeopleSoft": "00000094887",
+	"situacion": "KILOMETROS",
+	"kilometrajes": [{
+		"id": "",
+		"horaInicio": null,
+		"horaFin": null,
+		"lecturaCuentaKilometrosInicio": 300,
+		"lecturaCuentaKilometrosFin": 350,
+		"kilometros": 50,
+		"itinerario": "TEST",
+		"kilometrosPersonales": 0
+	}]
+}

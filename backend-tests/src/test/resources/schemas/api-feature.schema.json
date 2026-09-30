@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sido.tragsa.es/schemas/api-feature.schema.json",
+  "title": "Spec de feature de API SIDO2",
+  "description": "Formato de los *.spec.json que consume el runner de backend-tests.",
+  "type": "object",
+  "required": ["feature", "scenarios"],
+  "additionalProperties": false,
+  "properties": {
+    "feature": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Prefijo del nombre de cada test generado."
+    },
+    "description": {
+      "type": "string",
+      "description": "Documentacion de la feature."
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/scenario" }
+    }
+  },
+  "definitions": {
+    "scenario": {
+      "type": "object",
+      "required": ["idRunner", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "idRunner": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_.-]+$",
+          "description": "Identificador del caso de prueba. Es la clave que se pasa a Maven para lanzar solo este escenario: mvn test \"-Dsido.backend.scenario=CP_02\". Acepta comodin al final (CP_0*)."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nombre funcional del escenario."
+        },
+        "given": {
+          "type": "object",
+          "description": "Datos de contexto del escenario (usuario, credenciales, fechas)."
+        },
+        "data": {
+          "type": "object",
+          "description": "Datos que alimentan los marcadores ${data.campo} del body y de las comprobaciones."
+        },
+        "when": {
+          "type": "string",
+          "description": "Documentacion de la llamada realizada."
+        },
+        "and": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Pasos adicionales. Documentacion."
+        },
+        "then": {
+          "type": "string",
+          "description": "Documentacion del resultado esperado."
+        },
+        "foreach": { "$ref": "#/definitions/foreach" },
+        "request": { "$ref": "#/definitions/request" },
+        "expect": { "$ref": "#/definitions/expectation" }
+      }
+    },
+    "foreach": {
+      "type": "object",
+      "required": ["in", "as"],
+      "additionalProperties": false,
+      "description": "Repite el escenario una vez por cada elemento de una lista. Cada elemento se reporta como un test independiente.",
+      "properties": {
+        "in": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Lista a recorrer, como marcador (\"${data.vehiculos}\") o como ruta (\"data.vehiculos\")."
+        },
+        "as": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_]+$",
+          "description": "Nombre con el que el elemento aparece en los marcadores: \"as\": \"vehiculo\" habilita ${vehiculo.matricula}."
+        },
+        "labelBy": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Campo del elemento que se usa en el nombre del test. Por defecto, un objeto de un solo campo se muestra como campo=valor."
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "required": ["endpoint"],
+      "additionalProperties": false,
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nombre de la constante de Endpoints.java, URL absoluta o plantilla con marcadores."
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
+          "default": "GET"
+        },
+        "pathParams": {
+          "type": "object",
+          "description": "Sustituye {nombre} en la URL del endpoint."
+        },
+        "queryParams": { "type": "object" },
+        "headers": { "type": "object" },
+        "body": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "description": "Ruta de un JSON del classpath. Es la forma recomendada: el mismo fichero sirve para varios escenarios cambiando solo 'data'. Por ejemplo bodies/vehiculos/crearParteDiario.json"
+            },
+            {
+              "type": "object",
+              "description": "Body JSON declarado en linea en el spec."
+            },
+            { "type": "null" }
+          ]
+        },
+        "bodyType": {
+          "type": "string",
+          "enum": ["json", "text", "form", "multipart", "none"],
+          "default": "json"
+        },
+        "contentType": {
+          "type": "string",
+          "description": "Sobrescribe el Content-Type derivado de bodyType."
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "auth": {
+          "type": "string",
+          "enum": ["default", "bearer", "none"],
+          "default": "default",
+          "description": "'none' envia la peticion sin cabecera Authorization."
+        }
+      }
+    },
+    "expectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "oneOf": [
+            { "type": "integer", "minimum": 100, "maximum": 599 },
+            { "type": "string", "pattern": "^[1-5][0-9][0-9xX]$" },
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "integer", "minimum": 100, "maximum": 599 }
+            }
+          ],
+          "description": "Codigo esperado: 200, \"2xx\" o [200, 204]."
+        },
+        "contentType": {
+          "type": "string",
+          "description": "El Content-Type debe contener este fragmento."
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/headerMatcher" }
+        },
+        "response": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "description": "Ruta de un JSON del classpath con la respuesta esperada. Es la forma recomendada: permite reutilizar el mismo fichero entre escenarios. Por ejemplo responses/vehiculos/parteDiario.json"
+            },
+            {
+              "type": "object",
+              "description": "Respuesta esperada declarada en linea en el spec."
+            },
+            { "type": "null" }
+          ]
+        },
+        "matchMode": {
+          "type": "string",
+          "enum": ["partial", "exact"],
+          "default": "partial",
+          "description": "'partial' exige que la respuesta contenga los datos del JSON esperado; 'exact' exige igualdad."
+        },
+        "arrayMatch": {
+          "type": "string",
+          "enum": ["index", "byKey", "contains"],
+          "default": "index",
+          "description": "'index' compara por posicion, 'byKey' busca por 'arrayKey' y 'contains' exige que cada elemento esperado aparezca."
+        },
+        "arrayKey": {
+          "type": "string",
+          "description": "Campo que identifica cada elemento cuando arrayMatch es 'byKey'."
+        },
+        "ignorePaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Rutas que no se comparan. Admite comodin: $.data[*].fecha."
+        },
+        "jsonPaths": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/jsonPathCheck" }
+        },
+        "bodyEmpty": { "type": "boolean" },
+        "responseTimeMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Tiempo maximo de respuesta tolerated."
+        }
+      }
+    },
+    "headerMatcher": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "equals": { "type": "string" },
+        "contains": { "type": "string" },
+        "matches": { "type": "string" },
+        "exists": { "type": "boolean" }
+      }
+    },
+    "jsonPathCheck": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Ruta estilo JsonPath: $.data[0].id"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "equals",
+            "notEquals",
+            "contains",
+            "notContains",
+            "matches",
+            "in",
+            "exists",
+            "notExists",
+            "notNull",
+            "notEmpty",
+            "greaterThan",
+            "greaterThanOrEqual",
+            "lessThan",
+            "lessThanOrEqual",
+            "size"
+          ],
+          "default": "equals"
+        },
+        "value": {
+          "description": "Valor esperado. No se usa en exists, notExists, notNull ni notEmpty."
+        },
+        "ignoreCase": { "type": "boolean", "default": false },
+        "description": {
+          "type": "string",
+          "description": "Texto que aparece en el informe de fallo."
+        }
+      }
+    }
+  }
+}

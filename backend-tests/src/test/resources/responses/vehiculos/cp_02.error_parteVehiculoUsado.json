@@ -1,0 +1,7 @@
+{
+  "tipo": "InvalidPropertyValueException",
+  "mensaje": "Este vehículo ya ha sido utilizado en la fecha especificada. Por este motivo se requieren la hora de inicio y la hora de fin de uso.",
+  "severidad": "ERROR",
+  "motivo": null,
+  "stackTrace": null
+}
